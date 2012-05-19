@@ -1,0 +1,136 @@
+body {
+	color: black;
+	margin-left: 3%;
+	margin-right: 3%;
+	font-size: 10.5pt;
+	font-family: verdana, arial, helvetica, Sans-Serif;
+}
+
+h1 {
+	color: #000080;
+	background: #e0e0ff;
+	border-color: #8080d0;
+	border-style: solid;
+	border-top-style: none;
+	border-left-style: none;
+	border-bottom-width: thick;
+	border-right-width: thin;
+	padding-top: 0.2em;
+	padding-bottom: 0.2em;
+        text-align: center
+}
+h2 {
+	color: #000080;
+	background: #e0e0ff;
+	border-color: #8080d0;
+	border-style: solid;
+	border-top-style: none;
+	border-left-style: none;
+	border-bottom-width: thick;
+	border-right-width: thin;
+}
+code {
+	color: blue
+}
+var {
+	color: brown
+}
+dt {
+	color: red
+}
+pre {
+	border-right: #646464 1px solid;
+	padding-right: 0.5em;
+	border-top: #646464 1px solid;
+	padding-top: 0.5em;
+	border-left: #646464 1px solid;
+	padding-left: 0.5em;
+	border-bottom: #646464 1px solid;
+	padding-bottom: 0.5em;
+	background: #e0ffff;
+	margin-left: 1em;
+	width: 90%;
+}
+
+.menu {
+	font-size:0.75em;
+	text-align: center;
+	margin-left:0;
+	margin-right:0;
+	margin-bottom:10px;
+	margin-top:10px;
+	background-color:#a0e0e0;
+	height:2em;
+	position:relative;
+	top:0;
+	left:0;
+}
+
+#menu1 {
+	position:absolute;
+	left: 0px;
+	top: 0;
+}
+
+#menu2 {
+	position:absolute;
+	left: 150px;
+	top: 0;
+}
+
+#menu3 {
+	position: absolute;
+	left: 300px;
+	top: 0;
+}
+
+#menu4 {
+	position: absolute;
+	left: 450px;
+	top: 0;
+}
+
+#menu5 {
+	position: absolute;
+	left: 600px;
+	top: 0;
+}
+
+.menu a {
+	color: #000080;
+	background-color :#80d0d0;
+	text-decoration: none;
+	display: block;
+	width: 149px;
+	line-height: 2em
+}
+
+.menu a:hover {
+	background-color:#49abdb
+}
+
+.menuhead {
+	border-right: solid 1px #ffffff
+	color: #000080;
+	background-color :#80d0d0;
+	text-decoration: none;
+	display: block;
+	width: 149px;
+	line-height: 2em
+}
+
+.submenu {
+	visibility: hidden;
+	position: absolute;
+	left: 0
+}
+
+.submenu a {
+	background-color: #e0ffff;
+	border-top: solid 1px #000000;
+}
+
+.menu span {
+	color: #000000;
+	display: none
+}

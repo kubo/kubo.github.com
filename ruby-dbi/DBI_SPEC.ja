@@ -1,0 +1,391 @@
+=begin
+= DBIインターフェース仕様書 バージョン 0.2.2 (ドラフト)(私訳版)
+by Michael Neumann (neumann@s-direknet.de)
+
+日本語訳 KUBO Takehiro (kubo@jiubao.org)
+
+ $Original Id: DBI_SPEC,v 1.1 2002/10/02 18:10:37 mneumann Exp $
+ $Id: DBI_SPEC.ja,v 1.2 2003/10/25 18:51:47 kubo Exp $
+ 
+== Module DBD
+
+=== 定数
+
+--- API_VERSION
+    DBDドライバの作成者が正しいバージョンのDBD APIを用いているか確認するために使用する。
+
+== Module DBI
+
+=== 定数
+
+--- VERSION
+    DBIインターフェースのバージョン
+
+--- SQL_FETCH_NEXT
+--- SQL_FETCH_PRIOR
+--- SQL_FETCH_FIRST
+--- SQL_FETCH_LAST
+--- SQL_FETCH_ABSOLUTE
+    (({StatementHandle#fetch_scroll}))用の定数
+
+--- SQL_BIT
+--- SQL_TINYINT
+--- SQL_SMALLINT
+--- SQL_INTEGER
+--- SQL_BIGINT
+--- SQL_FLOAT
+--- SQL_REAL
+--- SQL_DOUBLE
+--- SQL_NUMERIC
+--- SQL_DECIMAL
+--- SQL_CHAR
+--- SQL_VARCHAR
+--- SQL_LONGVARCHAR
+--- SQL_DATE
+--- SQL_TIME
+--- SQL_TIMESTAMP
+--- SQL_BINARY
+--- SQL_VARBINARY
+--- SQL_LONGVARBINARY
+--- SQL_OTHER
+    SQLの種類を示す定数
+
+=== 例外
+
+例外クラスは Python 2.0 の API から「拝借」した。
+
+--- Warning < RuntimeError
+    データの切り捨て等の重要な警告
+
+--- Error < RuntimeError
+    他のエラー用例外の基底クラス。すべてのエラーを catch するときに使用すること。
+
+--- InterfaceError < Error
+    データベースそのものではなく、DBIインターフェースに関係するエラー用の例外
+
+--- NotImplementedError < InterfaceError
+    DBDドライバが必要なメソッドを実装してないとき上がる例外。
+    (Python 2.0 のAPIにはない)
+
+--- DatabaseError < Error
+    データベースに関係するエラー用の例外
+ 
+    ((|err|)), ((|errstr|)), ((|state|)) の３つの属性をもつ。
+
+--- DataError < DatabaseError
+    実行されるデータに問題があるときに起こるエラーの例外。
+    例えば０で除算をしたり、数値が要求される範囲を越えるなど。
+
+--- OperationalError < DatabaseError
+    プログラマの制御の元に置く必要のないデータベースの操作に関係する
+    エラーの例外。例えば予期せぬ切断、データソースが見つからない、
+    トランザクションが実行できない、実行中のメモリ確保エラーなど。
+
+--- IntegrityError < DatabaseError
+    データベースの整合性に起因する例外。例えば外部キー整合性の違反など。
+
+--- InternalError < DatabaseError
+    データベースが内部エラーに遭遇したときに起こる例外。例えば、
+    カーソルが有効な状態でない、トランザクションの同期ができないなど。
+
+--- ProgrammingError < DatabaseError
+    プログラムの作成のエラーにより起こる例外。例えば、テーブルがみつからない。
+    テーブルがすでに存在する。SQL文の構文エラー。指定されたパラメータの数
+    が間違っているなど。
+
+--- NotSupportedError < DatabaseError
+    例えば、トランザクションをサポートしないデータベースで commit() を呼んだときに
+    起こる。
+
+=== モジュール関数
+
+--- DBI.connect( driver_url, user=nil, auth=nil, params=nil )
+    ((*driver_url*))によって指定されるデータベースへ接続する。例えば、
+    "dbi:Oracle:oracle.neumann"など。
+ 
+    (({DBI::DatabaseHandle}))オブジェクトを戻す。コードブロック付きで
+    呼ばれたときは、新規の(({DBI::DatabaseHandle}))をパラメータとして
+    ブロックを実行し、ブロックの終了時に自動的に(({disconnect}))が呼ばれる。
+    (ブロック内でユーザにより切断されなかった場合)
+
+--- DBI.available_drivers
+    使用可能なDBDドライバの(({Array}))を返す。
+    DBDドライバを表現する文字列は不完全なDSNです。
+    (例 "dbi:Oracle:")
+
+--- DBI.data_sources( driver )
+    引数driverで使用可能なDSNをすべて返す。
+    引数な"dbi:Oracle:"といった不完全なDSNで指定する。
+
+--- DBI.disconnect_all( driver=nil )
+    引数driverで使用中の接続をすべて切断する。driverがnilのときはすべてのドライバの
+    接続を切断する。
+
+--- DBI.trace(mode=nil, output=nil)
+    以降作成されるハンドルすべてにトレースモードを設定する。
+
+    パラメータに(({nil}))が与えられときは、その値は変更されない。
+    値が前もって設定されてない場合は、引数が(({nil}))のときはデフォルト
+    で2となり、((|output|))は(({STDERR}))となる。
+    ((|mode|))には 0, 1, 2, 3 が設定できる。((<訳者註:トレースモードの分類|トレースモードの分類>))
+
+    注意事項: "dbi/trace" がロードされたときのみトレースが実行される。トレースは AspectR
+    のバージョンが 0.3.3 より上のときのみ有効となる。
+
+== Class DBI::Handle
+
+すべての"ハンドル"(DriverHandle, DatabaseHandle, StatementHandle)の抽象基底クラス
+
+=== インスタンスメソッド
+
+--- func( function, *values )
+    ドライバ固有の拡張関数を実行する。((|values|))をパラメータとして((|function|))
+    を実行する。
+
+--- trace(mode=nil, output=nil)
+    このハンドルとここから生成されたサブハンドル(DriverHandleとDatabaseHandleの場合)
+    に対してトレースモードを設定する。
+
+    パラメータに(({nil}))が与えられときは、その値は変更されない。
+    値が前もって設定されてない場合は、引数が(({nil}))のときはデフォルト
+    で2となり、((|output|))は(({STDERR}))となる。
+    ((|mode|))には 0, 1, 2, 3 が設定できる。((<訳者註:トレースモードの分類|トレースモードの分類>))
+
+    注意事項: "dbi/trace" がロードされたときのみトレースが実行される。トレースは AspectR
+    のバージョンが 0.3.3 より上のときのみ有効となる。
+
+== Class DBI::DatabaseHandle
+
+=== 親クラス
+
+--- DBI::Handle
+
+=== インスタンスメソッド
+
+--- connected?
+    ((<disconnect>))が呼ばれて切断されてなければ(({true}))を戻す。
+    さもなくば(({false}))を戻す。
+
+--- disconnect
+    接続を切断する。
+
+--- prepare( stmt )
+--- prepare( stmt ) {|statement_handle| aBlock}
+    SQL文((|stmt|))の実行準備して、(({DBI::StatementHandle}))を戻す。
+    ブロック付きで呼ばれた場合は、ハンドルをパラメータとしてブロックを
+    実行し、実行終了したら(({#finish}))を呼んですべてのリソースを解放する。
+
+--- execute( stmt, *bindvars )
+--- execute( stmt, *bindvars ) {|statement_handle| aBlock}
+    ((*bindvars*))で与えられた値をプレースホルダーにバインドしてから、
+    SQL文((*stmt*))を即座に実行する。
+
+    (({DBI::StatementHandle}))を戻す。ブロック付きで呼ばれば場合は、
+    ハンドルをパラメータとしてブロックを実行し、実行終了したら(({#finish}))
+    を呼んですべてのリソースを解放する。
+
+--- do( stmt, *bindvars )
+    ((<execute>))と同じだが、(({DBI::StatementHandle}))を戻すかわりに
+    処理された行数を戻す。
+   
+--- select_one( stmt, *bindvars)
+    ((*bindvars*))で与えられた値をプレースホルダーにバインドしてから、
+    SQL文((*stmt*))を実行し、最初の１行を(({DBI::Row}))オブジェクトとして戻す。
+
+--- select_all( stmt, *bindvars)
+    ((*bindvars*))で与えられた値をプレースホルダーにバインドしてから、
+    SQL文((*stmt*))を実行し、結果行をすべて戻す。
+
+    イテレータとして呼ばれた場合、ブロックに渡す(({DBI::Row}))オブジェクト
+    は単なる参照である。((<訳者註:DBI::Row|DBI::Row>))
+ 
+--- tables
+    すべてのテーブルとビューの一覧を戻す。
+
+--- columns( table )
+    引数のテーブル((|table|))のカラムに関する情報を取得する。
+    それぞれのカラムに付き(({DBI::ColumnInfo}))オブジェクトの配列を戻す。
+
+--- ping
+    接続が生きているならば(({true}))を戻す。さもなくば(({false}))を戻す。
+    
+    ((<connected?>))とは異なり、((<ping>))テストはSQLを実行するなどして
+    接続が生きているかどうか確認する。
+    
+--- quote( value )
+    与えられた値((*value*))をデータベース固有な形にquoteして結果を戻す。
+    ((<訳者註:quote|quote>))
+
+--- commit
+    現在のトランザクションをコミットする。
+
+--- rollback
+    現在のトランザクションをロールバックする。
+
+--- transaction {|database_handle| aBlock}
+    まず現在のトランザクションをコミットしてから、オブジェクトそのもの
+    (データベースハンドル)をパラメータとしてブロックを実行する。ブロッ
+    クが例外を上げたらトランザクションをロールバックする。例外を上げず
+    に終了したらコミットする。
+
+--- [](attr)
+--- []=(attr)
+    引数の属性((*attr*))を設定または取得する。属性には例えば、
+    "AutoCommit"などがある。AutoCommit には(({true}))もしくは
+    (({false}))を設定できる。指定できる属性はデータベースに依存する。
+
+== Class DBI::StatementHandle
+
+=== 親クラス
+
+--- DBI::Handle
+
+=== Mixins
+
+--- Enumerable
+
+=== インスタンスメソッド
+
+--- bind_param( param, value, attribs=nil )
+    ((*param*))でバインドするプレースホルダーを指定する。((*param*))
+    が文字列の場合はSQL文で使用されたプレースホルダーの名前となる。（例
+    えば、Oracleの場合は、"SELECT * FROM EMP WHERE ENAME = :ename"）
+    ((*param*))が整数の場合は、1から始まるプレースホルダーの位置を示す。
+
+    ((*value*))でプレースホルダーにバインドする値を指定する。
+
+    ((*attribs*))は現在のバージョンでは使用されていない。将来的には、
+    パラメータの種類などの追加情報をからなるハッシュとして使用される。
+
+--- execute( *bindvars )
+    プレースホルダーを((*bindvars*))でバインドして、SQL文を実行する。
+
+--- finish
+    SQL文のリソースを解放する。
+    ((<finish>))を実行した後は、この文ハンドルに対するすべての操作が無
+    効となる。
+
+--- cancel
+    (({execute}))を実行したあとの結果セットのリソースを解放する。
+    このメソッドを呼んだ後は、((*fetch*))メソッドの実行が無効となる。
+
+--- column_names
+    すべてのカラム名からなる(({Array}))を戻す。
+
+--- column_info
+    各カラムにつきひとつの(({DBI::ColumnInfo}))オブジェクトからなる配列を戻す。
+
+--- rows
+    最後に実行したSQL文のRPC(処理された行数)を戻す。処理行数の意味がない文が実行
+    された場合は(({nil}))が戻る。
+
+--- fetchable?
+    fetchで行が取り出せるときに true を戻す。
+ 
+--- fetch 
+    (({DBI::Row}))オブジェクトを戻す。それ以上戻せる行がないときは(({nil}))を戻す。
+
+    イテレータとして呼ばれたときは取り出す行がなくなるまでそれぞれの行毎にブロック
+    を実行する。それぞれの行は(({DBI::Row}))オブジェクトとしてブロックにわたされる。
+
+    注意事項: 戻り値の(({DBI::Row}))オブジェクトは単なる参照です。別の場所に結果を
+    蓄える場合はコピー(dup)したものを用いてください。((<訳者註:DBI::Row|DBI::Row>))
+
+--- each  {|row| aBlock }
+    イテレータとして呼ばれた((<fetch>))と同じ。
+
+--- fetch_array
+    現在の行を(({Array}))として戻す。それ以上行を取得できないときは
+    nil を戻す。
+    
+    イテレータとしても呼ぶことができる。
+
+--- fetch_hash 
+    現在の行を(({Hash}))として戻す。それ以上行を取得できないときは
+    nil を戻す。
+    
+    イテレータとしても呼ぶことができる。
+
+--- fetch_many( cnt )
+    次の((*cnt*))個行の(({Array}))を戻す。配列の中身は(({DBI::Row}))オ
+    ブジェクトからなる。
+
+    それ以上戻せる行がないときは、空の配列(({[]}))を戻す。
+
+--- fetch_all
+    全ての行を戻すこと以外は((<fetch_many>))と同じ。
+ 
+--- fetch_scroll( direction, offset=1 )
+    引数((*direction*))には次の定数のうちのひとつを指定する。((<訳者註|fetch_scrollで指定できるdirection>))
+    * SQL_FETCH_NEXT
+    * SQL_FETCH_PRIOR
+    * SQL_FETCH_FIRST
+    * SQL_FETCH_LAST
+    * SQL_FETCH_ABSOLUTE
+    * SQL_FETCH_RELATIVE
+    
+    ((*offset*))は正か負の数値。(SQL_FETCH_RELATIVE を使用したときのみ)
+
+    ((<fetch_scroll>))はこれ以上の行が使用できない場合、たとえば最後の
+    行を得た場合でも結果セットの自動的な解放をしない。
+
+    (({DBI::Row}))オブジェクトを戻す。オブジェクトを戻せない場合は(({nil}))を戻す。
+
+    注意事項: 戻り値の(({DBI::Row}))オブジェクトは単なる参照です。別の場所に結果を
+    蓄える場合はコピー(dup)したものを用いてください。((<訳者註:DBI::Row|DBI::Row>))
+
+--- [](attr)
+--- []=(attr)
+    引数の属性((*attr*))を設定または取得する。
+
+    訳者註: 指定できる属性はデータベースドライバに依存する。
+
+== 訳者註(notes by translator)
+
+   :トレースモードの分類
+      :0
+        トレースなし。
+      :1
+        メソッド実行後に戻り値やエラーを出力する。
+      :2
+        メソッド実行前に引数を出力し、メソッド実行後に戻り値やエラーを出力する。
+      :3
+        2と同じだが、オブジェクトの状態がさらに詳しく出力される。
+
+   :DBI::Row
+      fetchの戻り値、また、ブロックパラメータの(({DBI::Row}))オブジェ
+      クトは内部の値が変えられた上で毎回同じオブジェクトがわたされる。
+
+      例:
+          sth = dbh.execute("SELECT * FROM emp")
+          row1 = sth.fetch()
+          ... row1を参照すると、1行目の結果が取得できる。...
+          row2 = sth.fetch()
+          ... row2を参照すると、2行目の結果が取得できる。...
+          ... しかしここで row1 を参照すると、1行目の結果ではなくて、2行目の結果を得る。...
+
+      これは row1, row2 は同じオブジェクトを指しており、fetch によって
+      その内部状態が変更されるためである。
+
+      以前に fetch した値を保存したいときは、以下のように row1 のコピーを取っておく。
+
+          sth = dbh.execute("SELECT * FROM emp")
+          row1 = sth.fetch()
+          ... row1を参照すると、1行目の結果が取得できる。...
+          row1 = row1.dup  # 次の fetch で値が変わらないようにする。
+          row2 = sth.fetch()
+          ... row2を参照すると、2行目の結果が取得できる。...
+          ... ここで row1 を参照すると、コピーをとっておいたので1行目の結果を得る。...
+
+   :quote
+      Rubyの文字列をSQLの文字列としてそのまま埋め込める形に変更す
+      る。どのような文字列になるかはデータベースに依存する。
+      例えば、aaa'bbb\ccc をquoteすると、Oracle の場合は
+      'aaa''bbb\ccc' へ変換し、PostgreSQL の場合は 'aaa\'bbb\\ccc' へ変換する。
+
+   :fetch_scrollで指定できるdirection
+      ほとんどのデータベースドライバは SQL_FETCH_NEXT, SQL_FETCH_LAST,
+      SQL_FETCH_RELATIVE(offsetが正値のときのみ) の３種類のみをサポー
+      トしている。他の値が指定されると、(({NotSupportedError}))例外となる。
+
+=end

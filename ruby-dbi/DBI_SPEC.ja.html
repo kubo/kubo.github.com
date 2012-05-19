@@ -1,0 +1,391 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html 
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>DBI Specification Version 0.5 (Draft)</title>
+<link href="rubyStyle.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+<h1><a name="label-0" id="label-0">DBIインターフェース仕様書 バージョン 0.2.2 (ドラフト)(私訳版)</a></h1><!-- RDLabel: "DBIインターフェース仕様書 バージョン 0.2.2 (ドラフト)(私訳版)" -->
+<p>by Michael Neumann (neumann@s-direknet.de)</p>
+<p>日本語訳 KUBO Takehiro (kubo@jiubao.org)</p>
+<pre>$Original Id: DBI_SPEC,v 1.1 2002/10/02 18:10:37 mneumann Exp $
+$Id: DBI_SPEC.ja.html,v 1.2 2003/10/25 18:51:47 kubo Exp $</pre>
+<h2><a name="label-1" id="label-1">Module DBD</a></h2><!-- RDLabel: "Module DBD" -->
+<h3><a name="label-2" id="label-2">定数</a></h3><!-- RDLabel: "定数" -->
+<dl>
+<dt><a name="label-3" id="label-3"><code>API_VERSION</code></a></dt><!-- RDLabel: "API_VERSION" -->
+<dd>
+DBDドライバの作成者が正しいバージョンのDBD APIを用いているか確認するために使用する。</dd>
+</dl>
+<h2><a name="label-4" id="label-4">Module DBI</a></h2><!-- RDLabel: "Module DBI" -->
+<h3><a name="label-5" id="label-5">定数</a></h3><!-- RDLabel: "定数" -->
+<dl>
+<dt><a name="label-6" id="label-6"><code>VERSION</code></a></dt><!-- RDLabel: "VERSION" -->
+<dd>
+DBIインターフェースのバージョン</dd>
+<dt><a name="label-7" id="label-7"><code>SQL_FETCH_NEXT</code></a></dt><!-- RDLabel: "SQL_FETCH_NEXT" -->
+<dt><a name="label-8" id="label-8"><code>SQL_FETCH_PRIOR</code></a></dt><!-- RDLabel: "SQL_FETCH_PRIOR" -->
+<dt><a name="label-9" id="label-9"><code>SQL_FETCH_FIRST</code></a></dt><!-- RDLabel: "SQL_FETCH_FIRST" -->
+<dt><a name="label-10" id="label-10"><code>SQL_FETCH_LAST</code></a></dt><!-- RDLabel: "SQL_FETCH_LAST" -->
+<dt><a name="label-11" id="label-11"><code>SQL_FETCH_ABSOLUTE</code></a></dt><!-- RDLabel: "SQL_FETCH_ABSOLUTE" -->
+<dd>
+<code>StatementHandle#fetch_scroll</code>用の定数</dd>
+<dt><a name="label-12" id="label-12"><code>SQL_BIT</code></a></dt><!-- RDLabel: "SQL_BIT" -->
+<dt><a name="label-13" id="label-13"><code>SQL_TINYINT</code></a></dt><!-- RDLabel: "SQL_TINYINT" -->
+<dt><a name="label-14" id="label-14"><code>SQL_SMALLINT</code></a></dt><!-- RDLabel: "SQL_SMALLINT" -->
+<dt><a name="label-15" id="label-15"><code>SQL_INTEGER</code></a></dt><!-- RDLabel: "SQL_INTEGER" -->
+<dt><a name="label-16" id="label-16"><code>SQL_BIGINT</code></a></dt><!-- RDLabel: "SQL_BIGINT" -->
+<dt><a name="label-17" id="label-17"><code>SQL_FLOAT</code></a></dt><!-- RDLabel: "SQL_FLOAT" -->
+<dt><a name="label-18" id="label-18"><code>SQL_REAL</code></a></dt><!-- RDLabel: "SQL_REAL" -->
+<dt><a name="label-19" id="label-19"><code>SQL_DOUBLE</code></a></dt><!-- RDLabel: "SQL_DOUBLE" -->
+<dt><a name="label-20" id="label-20"><code>SQL_NUMERIC</code></a></dt><!-- RDLabel: "SQL_NUMERIC" -->
+<dt><a name="label-21" id="label-21"><code>SQL_DECIMAL</code></a></dt><!-- RDLabel: "SQL_DECIMAL" -->
+<dt><a name="label-22" id="label-22"><code>SQL_CHAR</code></a></dt><!-- RDLabel: "SQL_CHAR" -->
+<dt><a name="label-23" id="label-23"><code>SQL_VARCHAR</code></a></dt><!-- RDLabel: "SQL_VARCHAR" -->
+<dt><a name="label-24" id="label-24"><code>SQL_LONGVARCHAR</code></a></dt><!-- RDLabel: "SQL_LONGVARCHAR" -->
+<dt><a name="label-25" id="label-25"><code>SQL_DATE</code></a></dt><!-- RDLabel: "SQL_DATE" -->
+<dt><a name="label-26" id="label-26"><code>SQL_TIME</code></a></dt><!-- RDLabel: "SQL_TIME" -->
+<dt><a name="label-27" id="label-27"><code>SQL_TIMESTAMP</code></a></dt><!-- RDLabel: "SQL_TIMESTAMP" -->
+<dt><a name="label-28" id="label-28"><code>SQL_BINARY</code></a></dt><!-- RDLabel: "SQL_BINARY" -->
+<dt><a name="label-29" id="label-29"><code>SQL_VARBINARY</code></a></dt><!-- RDLabel: "SQL_VARBINARY" -->
+<dt><a name="label-30" id="label-30"><code>SQL_LONGVARBINARY</code></a></dt><!-- RDLabel: "SQL_LONGVARBINARY" -->
+<dt><a name="label-31" id="label-31"><code>SQL_OTHER</code></a></dt><!-- RDLabel: "SQL_OTHER" -->
+<dd>
+SQLの種類を示す定数</dd>
+</dl>
+<h3><a name="label-32" id="label-32">例外</a></h3><!-- RDLabel: "例外" -->
+<p>例外クラスは Python 2.0 の API から「拝借」した。</p>
+<dl>
+<dt><a name="label-33" id="label-33"><code>Warning &lt; <var>RuntimeError</var></code></a></dt><!-- RDLabel: "Warning < RuntimeError" -->
+<dd>
+データの切り捨て等の重要な警告</dd>
+<dt><a name="label-34" id="label-34"><code>Error &lt; <var>RuntimeError</var></code></a></dt><!-- RDLabel: "Error < RuntimeError" -->
+<dd>
+他のエラー用例外の基底クラス。すべてのエラーを catch するときに使用すること。</dd>
+<dt><a name="label-35" id="label-35"><code>InterfaceError &lt; <var>Error</var></code></a></dt><!-- RDLabel: "InterfaceError < Error" -->
+<dd>
+データベースそのものではなく、DBIインターフェースに関係するエラー用の例外</dd>
+<dt><a name="label-36" id="label-36"><code>NotImplementedError &lt; <var>InterfaceError</var></code></a></dt><!-- RDLabel: "NotImplementedError < InterfaceError" -->
+<dd>
+DBDドライバが必要なメソッドを実装してないとき上がる例外。
+(Python 2.0 のAPIにはない)</dd>
+<dt><a name="label-37" id="label-37"><code>DatabaseError &lt; <var>Error</var></code></a></dt><!-- RDLabel: "DatabaseError < Error" -->
+<dd>
+<p>データベースに関係するエラー用の例外</p>
+<p><var>err</var>, <var>errstr</var>, <var>state</var> の３つの属性をもつ。</p></dd>
+<dt><a name="label-38" id="label-38"><code>DataError &lt; <var>DatabaseError</var></code></a></dt><!-- RDLabel: "DataError < DatabaseError" -->
+<dd>
+実行されるデータに問題があるときに起こるエラーの例外。
+例えば０で除算をしたり、数値が要求される範囲を越えるなど。</dd>
+<dt><a name="label-39" id="label-39"><code>OperationalError &lt; <var>DatabaseError</var></code></a></dt><!-- RDLabel: "OperationalError < DatabaseError" -->
+<dd>
+プログラマの制御の元に置く必要のないデータベースの操作に関係する
+エラーの例外。例えば予期せぬ切断、データソースが見つからない、
+トランザクションが実行できない、実行中のメモリ確保エラーなど。</dd>
+<dt><a name="label-40" id="label-40"><code>IntegrityError &lt; <var>DatabaseError</var></code></a></dt><!-- RDLabel: "IntegrityError < DatabaseError" -->
+<dd>
+データベースの整合性に起因する例外。例えば外部キー整合性の違反など。</dd>
+<dt><a name="label-41" id="label-41"><code>InternalError &lt; <var>DatabaseError</var></code></a></dt><!-- RDLabel: "InternalError < DatabaseError" -->
+<dd>
+データベースが内部エラーに遭遇したときに起こる例外。例えば、
+カーソルが有効な状態でない、トランザクションの同期ができないなど。</dd>
+<dt><a name="label-42" id="label-42"><code>ProgrammingError &lt; <var>DatabaseError</var></code></a></dt><!-- RDLabel: "ProgrammingError < DatabaseError" -->
+<dd>
+プログラムの作成のエラーにより起こる例外。例えば、テーブルがみつからない。
+テーブルがすでに存在する。SQL文の構文エラー。指定されたパラメータの数
+が間違っているなど。</dd>
+<dt><a name="label-43" id="label-43"><code>NotSupportedError &lt; <var>DatabaseError</var></code></a></dt><!-- RDLabel: "NotSupportedError < DatabaseError" -->
+<dd>
+例えば、トランザクションをサポートしないデータベースで commit() を呼んだときに
+起こる。</dd>
+</dl>
+<h3><a name="label-44" id="label-44">モジュール関数</a></h3><!-- RDLabel: "モジュール関数" -->
+<dl>
+<dt><a name="label-45" id="label-45"><code>DBI.connect( <var>driver_url</var>, <var>user</var>=<var>nil</var>, <var>auth</var>=<var>nil</var>, <var>params</var>=<var>nil</var> )</code></a></dt><!-- RDLabel: "DBI.connect" -->
+<dd>
+<p><em>driver_url</em>によって指定されるデータベースへ接続する。例えば、
+"dbi:Oracle:oracle.neumann"など。</p>
+<p><code>DBI::DatabaseHandle</code>オブジェクトを戻す。コードブロック付きで
+呼ばれたときは、新規の<code>DBI::DatabaseHandle</code>をパラメータとして
+ブロックを実行し、ブロックの終了時に自動的に<code>disconnect</code>が呼ばれる。
+(ブロック内でユーザにより切断されなかった場合)</p></dd>
+<dt><a name="label-46" id="label-46"><code>DBI.available_drivers</code></a></dt><!-- RDLabel: "DBI.available_drivers" -->
+<dd>
+使用可能なDBDドライバの<code>Array</code>を返す。
+DBDドライバを表現する文字列は不完全なDSNです。
+(例 "dbi:Oracle:")</dd>
+<dt><a name="label-47" id="label-47"><code>DBI.data_sources( <var>driver</var> )</code></a></dt><!-- RDLabel: "DBI.data_sources" -->
+<dd>
+引数driverで使用可能なDSNをすべて返す。
+引数な"dbi:Oracle:"といった不完全なDSNで指定する。</dd>
+<dt><a name="label-48" id="label-48"><code>DBI.disconnect_all( <var>driver</var>=<var>nil</var> )</code></a></dt><!-- RDLabel: "DBI.disconnect_all" -->
+<dd>
+引数driverで使用中の接続をすべて切断する。driverがnilのときはすべてのドライバの
+接続を切断する。</dd>
+<dt><a name="label-49" id="label-49"><code>DBI.trace(<var>mode</var>=<var>nil</var>, <var>output</var>=<var>nil</var>)</code></a></dt><!-- RDLabel: "DBI.trace" -->
+<dd>
+<p>以降作成されるハンドルすべてにトレースモードを設定する。</p>
+<p>パラメータに<code>nil</code>が与えられときは、その値は変更されない。
+値が前もって設定されてない場合は、引数が<code>nil</code>のときはデフォルト
+で2となり、<var>output</var>は<code>STDERR</code>となる。
+<var>mode</var>には 0, 1, 2, 3 が設定できる。<a href="#label-100">訳者註:トレースモードの分類</a></p>
+<p>注意事項: "dbi/trace" がロードされたときのみトレースが実行される。トレースは AspectR
+のバージョンが 0.3.3 より上のときのみ有効となる。</p></dd>
+</dl>
+<h2><a name="label-50" id="label-50">Class DBI::Handle</a></h2><!-- RDLabel: "Class DBI::Handle" -->
+<p>すべての"ハンドル"(DriverHandle, DatabaseHandle, StatementHandle)の抽象基底クラス</p>
+<h3><a name="label-51" id="label-51">インスタンスメソッド</a></h3><!-- RDLabel: "インスタンスメソッド" -->
+<dl>
+<dt><a name="label-52" id="label-52"><code>func( <var>function</var>, *<var>values</var> )</code></a></dt><!-- RDLabel: "func" -->
+<dd>
+ドライバ固有の拡張関数を実行する。<var>values</var>をパラメータとして<var>function</var>
+を実行する。</dd>
+<dt><a name="label-53" id="label-53"><code>trace(<var>mode</var>=<var>nil</var>, <var>output</var>=<var>nil</var>)</code></a></dt><!-- RDLabel: "trace" -->
+<dd>
+<p>このハンドルとここから生成されたサブハンドル(DriverHandleとDatabaseHandleの場合)
+に対してトレースモードを設定する。</p>
+<p>パラメータに<code>nil</code>が与えられときは、その値は変更されない。
+値が前もって設定されてない場合は、引数が<code>nil</code>のときはデフォルト
+で2となり、<var>output</var>は<code>STDERR</code>となる。
+<var>mode</var>には 0, 1, 2, 3 が設定できる。<a href="#label-100">訳者註:トレースモードの分類</a></p>
+<p>注意事項: "dbi/trace" がロードされたときのみトレースが実行される。トレースは AspectR
+のバージョンが 0.3.3 より上のときのみ有効となる。</p></dd>
+</dl>
+<h2><a name="label-54" id="label-54">Class DBI::DatabaseHandle</a></h2><!-- RDLabel: "Class DBI::DatabaseHandle" -->
+<h3><a name="label-55" id="label-55">親クラス</a></h3><!-- RDLabel: "親クラス" -->
+<dl>
+<dt><a name="label-56" id="label-56"><code>DBI::Handle</code></a></dt><!-- RDLabel: "DBI::Handle" -->
+</dl>
+<h3><a name="label-57" id="label-57">インスタンスメソッド</a></h3><!-- RDLabel: "インスタンスメソッド" -->
+<dl>
+<dt><a name="label-58" id="label-58"><code>connected?</code></a></dt><!-- RDLabel: "connected?" -->
+<dd>
+<a href="#label-59">disconnect</a>が呼ばれて切断されてなければ<code>true</code>を戻す。
+さもなくば<code>false</code>を戻す。</dd>
+<dt><a name="label-59" id="label-59"><code>disconnect</code></a></dt><!-- RDLabel: "disconnect" -->
+<dd>
+接続を切断する。</dd>
+<dt><a name="label-60" id="label-60"><code>prepare( <var>stmt</var> )</code></a></dt><!-- RDLabel: "prepare" -->
+<dt><a name="label-61" id="label-61"><code>prepare( <var>stmt</var> ) {|<var>statement_handle</var>| <var>aBlock</var>}</code></a></dt><!-- RDLabel: "prepare" -->
+<dd>
+SQL文<var>stmt</var>の実行準備して、<code>DBI::StatementHandle</code>を戻す。
+ブロック付きで呼ばれた場合は、ハンドルをパラメータとしてブロックを
+実行し、実行終了したら<code>#finish</code>を呼んですべてのリソースを解放する。</dd>
+<dt><a name="label-62" id="label-62"><code>execute( <var>stmt</var>, *<var>bindvars</var> )</code></a></dt><!-- RDLabel: "execute" -->
+<dt><a name="label-63" id="label-63"><code>execute( <var>stmt</var>, *<var>bindvars</var> ) {|<var>statement_handle</var>| <var>aBlock</var>}</code></a></dt><!-- RDLabel: "execute" -->
+<dd>
+<p><em>bindvars</em>で与えられた値をプレースホルダーにバインドしてから、
+SQL文<em>stmt</em>を即座に実行する。</p>
+<p><code>DBI::StatementHandle</code>を戻す。ブロック付きで呼ばれば場合は、
+ハンドルをパラメータとしてブロックを実行し、実行終了したら<code>#finish</code>
+を呼んですべてのリソースを解放する。</p></dd>
+<dt><a name="label-64" id="label-64"><code>do( <var>stmt</var>, *<var>bindvars</var> )</code></a></dt><!-- RDLabel: "do" -->
+<dd>
+<a href="#label-62">execute</a>と同じだが、<code>DBI::StatementHandle</code>を戻すかわりに
+処理された行数を戻す。</dd>
+<dt><a name="label-65" id="label-65"><code>select_one( <var>stmt</var>, *<var>bindvars</var>)</code></a></dt><!-- RDLabel: "select_one" -->
+<dd>
+<em>bindvars</em>で与えられた値をプレースホルダーにバインドしてから、
+SQL文<em>stmt</em>を実行し、最初の１行を<code>DBI::Row</code>オブジェクトとして戻す。</dd>
+<dt><a name="label-66" id="label-66"><code>select_all( <var>stmt</var>, *<var>bindvars</var>)</code></a></dt><!-- RDLabel: "select_all" -->
+<dd>
+<p><em>bindvars</em>で与えられた値をプレースホルダーにバインドしてから、
+SQL文<em>stmt</em>を実行し、結果行をすべて戻す。</p>
+<p>イテレータとして呼ばれた場合、ブロックに渡す<code>DBI::Row</code>オブジェクト
+は単なる参照である。<a href="#label-105">訳者註:DBI::Row</a></p></dd>
+<dt><a name="label-67" id="label-67"><code>tables</code></a></dt><!-- RDLabel: "tables" -->
+<dd>
+すべてのテーブルとビューの一覧を戻す。</dd>
+<dt><a name="label-68" id="label-68"><code>columns( <var>table</var> )</code></a></dt><!-- RDLabel: "columns" -->
+<dd>
+引数のテーブル<var>table</var>のカラムに関する情報を取得する。
+それぞれのカラムに付き<code>DBI::ColumnInfo</code>オブジェクトの配列を戻す。</dd>
+<dt><a name="label-69" id="label-69"><code>ping</code></a></dt><!-- RDLabel: "ping" -->
+<dd>
+<p>接続が生きているならば<code>true</code>を戻す。さもなくば<code>false</code>を戻す。</p>
+<p><a href="#label-58">connected?</a>とは異なり、<a href="#label-69">ping</a>テストはSQLを実行するなどして
+接続が生きているかどうか確認する。</p></dd>
+<dt><a name="label-70" id="label-70"><code>quote( <var>value</var> )</code></a></dt><!-- RDLabel: "quote" -->
+<dd>
+与えられた値<em>value</em>をデータベース固有な形にquoteして結果を戻す。
+<a href="#label-70">訳者註:quote</a></dd>
+<dt><a name="label-71" id="label-71"><code>commit</code></a></dt><!-- RDLabel: "commit" -->
+<dd>
+現在のトランザクションをコミットする。</dd>
+<dt><a name="label-72" id="label-72"><code>rollback</code></a></dt><!-- RDLabel: "rollback" -->
+<dd>
+現在のトランザクションをロールバックする。</dd>
+<dt><a name="label-73" id="label-73"><code>transaction {|<var>database_handle</var>| <var>aBlock</var>}</code></a></dt><!-- RDLabel: "transaction" -->
+<dd>
+まず現在のトランザクションをコミットしてから、オブジェクトそのもの
+(データベースハンドル)をパラメータとしてブロックを実行する。ブロッ
+クが例外を上げたらトランザクションをロールバックする。例外を上げず
+に終了したらコミットする。</dd>
+<dt><a name="label-74" id="label-74"><code>[<var>attr</var>]</code></a></dt><!-- RDLabel: "[]" -->
+<dt><a name="label-75" id="label-75"><code>[<var>attr</var>] = <var>val</var></code></a></dt><!-- RDLabel: "[]=" -->
+<dd>
+引数の属性<em>attr</em>を設定または取得する。属性には例えば、
+"AutoCommit"などがある。AutoCommit には<code>true</code>もしくは
+<code>false</code>を設定できる。指定できる属性はデータベースに依存する。</dd>
+</dl>
+<h2><a name="label-76" id="label-76">Class DBI::StatementHandle</a></h2><!-- RDLabel: "Class DBI::StatementHandle" -->
+<h3><a name="label-77" id="label-77">親クラス</a></h3><!-- RDLabel: "親クラス" -->
+<dl>
+<dt><a name="label-78" id="label-78"><code>DBI::Handle</code></a></dt><!-- RDLabel: "DBI::Handle" -->
+</dl>
+<h3><a name="label-79" id="label-79">Mixins</a></h3><!-- RDLabel: "Mixins" -->
+<dl>
+<dt><a name="label-80" id="label-80"><code>Enumerable</code></a></dt><!-- RDLabel: "Enumerable" -->
+</dl>
+<h3><a name="label-81" id="label-81">インスタンスメソッド</a></h3><!-- RDLabel: "インスタンスメソッド" -->
+<dl>
+<dt><a name="label-82" id="label-82"><code>bind_param( <var>param</var>, <var>value</var>, <var>attribs</var>=<var>nil</var> )</code></a></dt><!-- RDLabel: "bind_param" -->
+<dd>
+<p><em>param</em>でバインドするプレースホルダーを指定する。<em>param</em>
+が文字列の場合はSQL文で使用されたプレースホルダーの名前となる。（例
+えば、Oracleの場合は、"SELECT * FROM EMP WHERE ENAME = :ename"）
+<em>param</em>が整数の場合は、1から始まるプレースホルダーの位置を示す。</p>
+<p><em>value</em>でプレースホルダーにバインドする値を指定する。</p>
+<p><em>attribs</em>は現在のバージョンでは使用されていない。将来的には、
+パラメータの種類などの追加情報をからなるハッシュとして使用される。</p></dd>
+<dt><a name="label-83" id="label-83"><code>execute( *<var>bindvars</var> )</code></a></dt><!-- RDLabel: "execute" -->
+<dd>
+プレースホルダーを<em>bindvars</em>でバインドして、SQL文を実行する。</dd>
+<dt><a name="label-84" id="label-84"><code>finish</code></a></dt><!-- RDLabel: "finish" -->
+<dd>
+SQL文のリソースを解放する。
+<a href="#label-84">finish</a>を実行した後は、この文ハンドルに対するすべての操作が無
+効となる。</dd>
+<dt><a name="label-85" id="label-85"><code>cancel</code></a></dt><!-- RDLabel: "cancel" -->
+<dd>
+<code>execute</code>を実行したあとの結果セットのリソースを解放する。
+このメソッドを呼んだ後は、<em>fetch</em>メソッドの実行が無効となる。</dd>
+<dt><a name="label-86" id="label-86"><code>column_names</code></a></dt><!-- RDLabel: "column_names" -->
+<dd>
+すべてのカラム名からなる<code>Array</code>を戻す。</dd>
+<dt><a name="label-87" id="label-87"><code>column_info</code></a></dt><!-- RDLabel: "column_info" -->
+<dd>
+各カラムにつきひとつの<code>DBI::ColumnInfo</code>オブジェクトからなる配列を戻す。</dd>
+<dt><a name="label-88" id="label-88"><code>rows</code></a></dt><!-- RDLabel: "rows" -->
+<dd>
+最後に実行したSQL文のRPC(処理された行数)を戻す。処理行数の意味がない文が実行
+された場合は<code>nil</code>が戻る。</dd>
+<dt><a name="label-89" id="label-89"><code>fetchable?</code></a></dt><!-- RDLabel: "fetchable?" -->
+<dd>
+fetchで行が取り出せるときに true を戻す。</dd>
+<dt><a name="label-90" id="label-90"><code>fetch</code></a></dt><!-- RDLabel: "fetch" -->
+<dd>
+<p><code>DBI::Row</code>オブジェクトを戻す。それ以上戻せる行がないときは<code>nil</code>を戻す。</p>
+<p>イテレータとして呼ばれたときは取り出す行がなくなるまでそれぞれの行毎にブロック
+を実行する。それぞれの行は<code>DBI::Row</code>オブジェクトとしてブロックにわたされる。</p>
+<p>注意事項: 戻り値の<code>DBI::Row</code>オブジェクトは単なる参照です。別の場所に結果を
+蓄える場合はコピー(dup)したものを用いてください。<a href="#label-105">訳者註:DBI::Row</a></p></dd>
+<dt><a name="label-91" id="label-91"><code>each  {|<var>row</var>| <var>aBlock</var> }</code></a></dt><!-- RDLabel: "each" -->
+<dd>
+イテレータとして呼ばれた<a href="#label-90">fetch</a>と同じ。</dd>
+<dt><a name="label-92" id="label-92"><code>fetch_array</code></a></dt><!-- RDLabel: "fetch_array" -->
+<dd>
+<p>現在の行を<code>Array</code>として戻す。それ以上行を取得できないときは
+nil を戻す。</p>
+<p>イテレータとしても呼ぶことができる。</p></dd>
+<dt><a name="label-93" id="label-93"><code>fetch_hash</code></a></dt><!-- RDLabel: "fetch_hash" -->
+<dd>
+<p>現在の行を<code>Hash</code>として戻す。それ以上行を取得できないときは
+nil を戻す。</p>
+<p>イテレータとしても呼ぶことができる。</p></dd>
+<dt><a name="label-94" id="label-94"><code>fetch_many( <var>cnt</var> )</code></a></dt><!-- RDLabel: "fetch_many" -->
+<dd>
+<p>次の<em>cnt</em>個行の<code>Array</code>を戻す。配列の中身は<code>DBI::Row</code>オ
+ブジェクトからなる。</p>
+<p>それ以上戻せる行がないときは、空の配列<code>[]</code>を戻す。</p></dd>
+<dt><a name="label-95" id="label-95"><code>fetch_all</code></a></dt><!-- RDLabel: "fetch_all" -->
+<dd>
+全ての行を戻すこと以外は<a href="#label-94">fetch_many</a>と同じ。</dd>
+<dt><a name="label-96" id="label-96"><code>fetch_scroll( <var>direction</var>, <var>offset</var>=<var>1</var> )</code></a></dt><!-- RDLabel: "fetch_scroll" -->
+<dd>
+<p>引数<em>direction</em>には次の定数のうちのひとつを指定する。<a href="#label-107">訳者註</a></p>
+<ul>
+<li>SQL_FETCH_NEXT</li>
+<li>SQL_FETCH_PRIOR</li>
+<li>SQL_FETCH_FIRST</li>
+<li>SQL_FETCH_LAST</li>
+<li>SQL_FETCH_ABSOLUTE</li>
+<li>SQL_FETCH_RELATIVE</li>
+</ul>
+<p><em>offset</em>は正か負の数値。(SQL_FETCH_RELATIVE を使用したときのみ)</p>
+<p><a href="#label-96">fetch_scroll</a>はこれ以上の行が使用できない場合、たとえば最後の
+行を得た場合でも結果セットの自動的な解放をしない。</p>
+<p><code>DBI::Row</code>オブジェクトを戻す。オブジェクトを戻せない場合は<code>nil</code>を戻す。</p>
+<p>注意事項: 戻り値の<code>DBI::Row</code>オブジェクトは単なる参照です。別の場所に結果を
+蓄える場合はコピー(dup)したものを用いてください。<a href="#label-105">訳者註:DBI::Row</a></p></dd>
+<dt><a name="label-97" id="label-97"><code>[<var>attr</var>]</code></a></dt><!-- RDLabel: "[]" -->
+<dt><a name="label-98" id="label-98"><code>[<var>attr</var>] = <var>val</var></code></a></dt><!-- RDLabel: "[]=" -->
+<dd>
+<p>引数の属性<em>attr</em>を設定または取得する。</p>
+<p>訳者註: 指定できる属性はデータベースドライバに依存する。</p></dd>
+</dl>
+<h2><a name="label-99" id="label-99">訳者註(notes by translator)</a></h2><!-- RDLabel: "訳者註(notes by translator)" -->
+<dl>
+<dt><a name="label-100" id="label-100">トレースモードの分類</a></dt><!-- RDLabel: "トレースモードの分類" -->
+<dd>
+<dl>
+<dt><a name="label-101" id="label-101">0</a></dt><!-- RDLabel: "0" -->
+<dd>
+トレースなし。
+</dd>
+<dt><a name="label-102" id="label-102">1</a></dt><!-- RDLabel: "1" -->
+<dd>
+メソッド実行後に戻り値やエラーを出力する。
+</dd>
+<dt><a name="label-103" id="label-103">2</a></dt><!-- RDLabel: "2" -->
+<dd>
+メソッド実行前に引数を出力し、メソッド実行後に戻り値やエラーを出力する。
+</dd>
+<dt><a name="label-104" id="label-104">3</a></dt><!-- RDLabel: "3" -->
+<dd>
+2と同じだが、オブジェクトの状態がさらに詳しく出力される。
+</dd>
+</dl>
+</dd>
+<dt><a name="label-105" id="label-105">DBI::Row</a></dt><!-- RDLabel: "DBI::Row" -->
+<dd>
+<p>fetchの戻り値、また、ブロックパラメータの<code>DBI::Row</code>オブジェ
+クトは内部の値が変えられた上で毎回同じオブジェクトがわたされる。</p>
+<p>例:</p>
+<pre>sth = dbh.execute("SELECT * FROM emp")
+row1 = sth.fetch()
+... row1を参照すると、1行目の結果が取得できる。...
+row2 = sth.fetch()
+... row2を参照すると、2行目の結果が取得できる。...
+... しかしここで row1 を参照すると、1行目の結果ではなくて、2行目の結果を得る。...</pre>
+<p>これは row1, row2 は同じオブジェクトを指しており、fetch によって
+その内部状態が変更されるためである。</p>
+<p>以前に fetch した値を保存したいときは、以下のように row1 のコピーを取っておく。</p>
+<pre>sth = dbh.execute("SELECT * FROM emp")
+row1 = sth.fetch()
+... row1を参照すると、1行目の結果が取得できる。...
+row1 = row1.dup  # 次の fetch で値が変わらないようにする。
+row2 = sth.fetch()
+... row2を参照すると、2行目の結果が取得できる。...
+... ここで row1 を参照すると、コピーをとっておいたので1行目の結果を得る。...</pre>
+</dd>
+<dt><a name="label-106" id="label-106">quote</a></dt><!-- RDLabel: "quote" -->
+<dd>
+Rubyの文字列をSQLの文字列としてそのまま埋め込める形に変更す
+る。どのような文字列になるかはデータベースに依存する。
+例えば、aaa'bbb\ccc をquoteすると、Oracle の場合は
+'aaa''bbb\ccc' へ変換し、PostgreSQL の場合は 'aaa\'bbb\\ccc' へ変換する。
+</dd>
+<dt><a name="label-107" id="label-107">fetch_scrollで指定できるdirection</a></dt><!-- RDLabel: "fetch_scrollで指定できるdirection" -->
+<dd>
+ほとんどのデータベースドライバは SQL_FETCH_NEXT, SQL_FETCH_LAST,
+SQL_FETCH_RELATIVE(offsetが正値のときのみ) の３種類のみをサポー
+トしている。他の値が指定されると、<code>NotSupportedError</code>例外となる。
+</dd>
+</dl>
+
+</body>
+</html>
